@@ -11,12 +11,12 @@ from erisml.core.types import ActionInstance
 
 
 class ErisPettingZooEnv(AECEnv):
-    '''Minimal PettingZoo adapter for an ErisModel.
+    """Minimal PettingZoo adapter for an ErisModel.
 
     This is a stub: you must customize observation and action spaces for
     your particular domain. The purpose here is to show how ErisEngine
     can be embedded behind the PettingZoo API.
-    '''
+    """
 
     metadata = {"render_modes": ["human"]}
 

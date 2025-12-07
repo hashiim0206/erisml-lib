@@ -24,8 +24,7 @@ def build_tiny_home_model() -> ErisModel:
     env.add_state_var("light_on_r2", StateVarDomain(BaseType.BOOL))
 
     def move_robot_rule(
-        state: Dict[str, Any],
-        params: Dict[str, Any],
+        state: Dict[str, Any], params: Dict[str, Any]
     ) -> Dict[str, Any]:
         from_room = params["from"]
         to_room = params["to"]
@@ -35,8 +34,7 @@ def build_tiny_home_model() -> ErisModel:
         return new_state
 
     def toggle_light_rule(
-        state: Dict[str, Any],
-        params: Dict[str, Any],
+        state: Dict[str, Any], params: Dict[str, Any]
     ) -> Dict[str, Any]:
         room = params["room"]
         new_state = dict(state)
@@ -44,12 +42,8 @@ def build_tiny_home_model() -> ErisModel:
         new_state[key] = not state[key]
         return new_state
 
-    env.add_rule(
-        EnvironmentRule("move_robot", ["from", "to"], move_robot_rule)
-    )
-    env.add_rule(
-        EnvironmentRule("toggle_light", ["room"], toggle_light_rule)
-    )
+    env.add_rule(EnvironmentRule("move_robot", ["from", "to"], move_robot_rule))
+    env.add_rule(EnvironmentRule("toggle_light", ["room"], toggle_light_rule))
 
     robot = AgentModel(name="Robot")
     robot.add_capability(ActionSchema("move_robot", ["from", "to"]))
@@ -59,35 +53,23 @@ def build_tiny_home_model() -> ErisModel:
 
     norms = NormSystem(name="Safety")
 
-    def prohibition_move_to_r2(
-        state: Dict[str, Any],
-        action: ActionInstance,
-    ) -> bool:
+    def prohibition_move_to_r2(state: Dict[str, Any], action: ActionInstance) -> bool:
         return (
             action.agent == "Robot"
             and action.name == "move_robot"
             and action.params.get("to") == "r2"
         )
 
-    norms.add_rule(
-        NormRule("no_move_into_r2", "prohibition", prohibition_move_to_r2)
-    )
+    norms.add_rule(NormRule("no_move_into_r2", "prohibition", prohibition_move_to_r2))
 
     def obligation_light_on_human_room(
-        state: Dict[str, Any],
-        action: ActionInstance,
+        state: Dict[str, Any], action: ActionInstance
     ) -> bool:
         room = state["location_human"]
         key = f"light_on_{room}"
         return not state[key]
 
-    norms.add_rule(
-        NormRule(
-            "keep_human_room_lit",
-            "obligation",
-            obligation_light_on_human_room,
-        )
-    )
+    norms.add_rule(NormRule("no_move_into_r2", "prohibition", prohibition_move_to_r2))
 
     model = ErisModel(env=env, agents=agents, norms=norms)
     return model
@@ -106,21 +88,15 @@ def demo_tiny_home_run() -> None:
 
     print("Initial state:", state)
 
-    a1 = ActionInstance(
-        agent="Robot",
-        name="toggle_light",
-        params={"room": "r1"},
-    )
+    a1 = ActionInstance(agent="Robot", name="toggle_light", params={"room": "r1"})
     state = engine.step(state, a1)
     print("After toggle_light(r1):", state)
 
     a2 = ActionInstance(
-        agent="Robot",
-        name="move_robot",
-        params={"from": "r1", "to": "r2"},
+        agent="Robot", name="move_robot", params={"from": "r1", "to": "r2"}
     )
     try:
-        state = engine.step(state, a2)
+        engine.step(state, a2)
     except NormViolation as exc:
         print("Blocked action:", a2)
         print("Reason:", exc)
