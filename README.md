@@ -4,6 +4,11 @@ ErisML is a modeling layer for governed, foundation-model-enabled agents
 operating in pervasive computing environments (homes, hospitals, campuses,
 factories, vehicles, etc.).
 
+
+![CI](https://github.com/ahb-sjsu/erisml-lib/actions/workflows/ci.yaml/badge.svg)
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)
+![License](https://img.shields.io/badge/License-MIT-green.svg)
+
 This repository contains a production-style Python library with:
 
 - Modern `src/` layout and `pyproject.toml`
