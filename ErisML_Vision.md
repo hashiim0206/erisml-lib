@@ -673,3 +673,136 @@ The author thanks anonymous reviewers whose feedback shaped this vision. Discuss
 [13] D. Hadfield-Menell et al., "Inverse Reward Design," *NeurIPS*, 2017.
 
 [14] B. McMahan et al., "Communication-Efficient Learning of Deep Networks from Decentralized Data," *AISTATS*, 2017.
+
+[15] C. Dwork, "Differential Privacy," *ICALP*, 2006.
+
+[16] S. Amershi et al., "Guidelines for Human-AI Interaction," *CHI*, 2019.
+
+[17] P. Liang et al., "Holistic Evaluation of Language Models," *arXiv:2211.09110*, 2022.
+
+[18] D. Sculley et al., "Hidden Technical Debt in Machine Learning Systems," *NeurIPS*, 2015.
+
+[19] T. Gebru et al., "Datasheets for Datasets," *Communications of the ACM*, vol. 64, no. 12, pp. 86-92, 2021.
+
+[20] M. Mitchell et al., "Model Cards for Model Reporting," *FAT\**, 2019.
+
+[21] N. Dalal et al., "Value-Sensitive Design and Information Systems," in *The Handbook of Information and Computer Ethics*, Wiley, 2008.
+
+[22] D. Ha and J. Schmidhuber, "World Models," *arXiv:1803.10122*, 2018.
+
+[23] D. Hafner et al., "Mastering Atari with Discrete World Models," *ICLR*, 2021.
+
+[24] A. Rai, "Explainable AI: From Black Box to Glass Box," *Journal of the Academy of Marketing Science*, vol. 48, pp. 137-141, 2020.
+
+[25] S. Russell, *Human Compatible: Artificial Intelligence and the Problem of Control*, Viking, 2019.
+
+[26] V. Dignum, *Responsible Artificial Intelligence: How to Develop and Use AI in a Responsible Way*, Springer, 2019.
+
+[27] I. Rahwan et al., "Machine Behaviour," *Nature*, vol. 568, pp. 477-486, 2019.
+
+[28] S. Yao et al., "ReAct: Synergizing Reasoning and Acting in Language Models," *ICLR*, 2023.
+
+[29] N. Shinn et al., "Reflexion: Language Agents with Verbal Reinforcement," *arXiv:2303.11366*, 2023.
+
+[30] G. Wang et al., "Voyager: An Open-Ended Embodied Agent with LLMs," *arXiv:2305.16291*, 2023.
+
+[31] F. Dignum et al., "Meeting the Deadline: Why, When and How," in *Formal Approaches to Agent-Based Systems*, Springer, 2004.
+
+[32] M. Sergot, "A Computational Theory of Normative Positions," *ACM Trans. on Computational Logic*, vol. 2, no. 4, pp. 581-622, 2001.
+
+[33] R. H. Bordini, J. F. Hübner, and M. Wooldridge, *Programming Multi-Agent Systems in AgentSpeak using Jason*, Wiley, 2007.
+
+[34] J. Simonsen and T. Robertson, *Routledge International Handbook of Participatory Design*, Routledge, 2012.
+
+[35] O. Maler and D. Nickovic, "Monitoring Temporal Properties of Continuous Signals," in *Formal Techniques, Modelling and Analysis of Timed and Fault-Tolerant Systems*, Springer, 2004.
+
+[36] A. Platzer, "Logical Foundations of Cyber-Physical Systems," Springer, 2018.
+
+[37] Y. Bengio et al., "A Meta-Transfer Objective for Learning to Disentangle Causal Mechanisms," *ICLR*, 2020.
+
+[38] D. Abel et al., "Agent-Agnostic Human-in-the-Loop Reinforcement Learning," *arXiv:1701.04079*, 2017.
+
+[39] C. Finn et al., "Model-Agnostic Meta-Learning for Fast Adaptation," *ICML*, 2017.
+
+[40] European Commission, "Proposal for a Regulation on Artificial Intelligence (AI Act)," 2021.
+
+---
+
+## Appendix A: ErisML Grammar (Excerpt)
+
+```bnf
+<model> ::= <environment> <agent>* <norms>? <dynamics>? <validation>?
+
+<environment> ::= "environment" <id> "{" <env-body> "}"
+<env-body> ::= <objects> <state> <observations>? <dynamics>
+
+<agent> ::= "agent" <id> "{" <agent-body> "}"
+<agent-body> ::= <capabilities> <beliefs> <intents> <constraints>?
+
+<norms> ::= "norms" <id> "{" <norm-rule>* "}"
+<norm-rule> ::= <permission> | <prohibition> | <obligation> | <sanction>
+
+<permission> ::= "permission:" "{" <action-expr> <condition>? "}" ";"
+<prohibition> ::= "prohibition:" "{" <action-expr> <condition>? "}" ";"
+<obligation> ::= "obligation:" "{" <action-expr> <deadline>? "}" ";"
+
+<intents> ::= "intents:" <intent-expr> ";"
+<intent-expr> ::= <weighted> | <lexicographic> | <constrained>
+
+<condition> ::= "when" <expr> | "unless" <expr>
+```
+
+---
+
+## Appendix B: Compilation Example (PDDL)
+
+**ErisML Input**:
+```erisml
+environment SimpleRoom {
+  objects: Robot, Door;
+  state:
+    door.status: {open, closed};
+    robot.location: {inside, outside};
+  dynamics:
+    open_door() ~> door.status = open;
+    enter() ~> robot.location = inside if door.status == open;
+}
+
+agent Robot {
+  intents: goal robot.location == inside;
+}
+
+norms Safety {
+  prohibition: Robot.enter() unless door.status == open;
+}
+```
+
+**PDDL Output**:
+```pddl
+(define (domain simple-room)
+  (:requirements :strips :typing)
+  (:predicates (door-open) (door-closed) (robot-inside) (robot-outside))
+  
+  (:action open-door
+    :parameters ()
+    :precondition (door-closed)
+    :effect (and (door-open) (not (door-closed))))
+  
+  (:action enter
+    :parameters ()
+    :precondition (and (robot-outside) (door-open))  ; Norm enforced
+    :effect (and (robot-inside) (not (robot-outside)))))
+
+(define (problem reach-inside)
+  (:domain simple-room)
+  (:init (door-closed) (robot-outside))
+  (:goal (robot-inside)))
+```
+
+**Note**: The prohibition from `norms Safety` is compiled into the precondition of the `enter` action. This ensures the planner never generates norm-violating plans, but provenance information (that this precondition comes from a norm) is lost in translation.
+
+---
+
+**Word Count**: ~9,500 words (~25 pages at standard formatting)
+**Figures needed**: 3-5 diagrams as noted in review
+**Target venues**: IEEE Pervasive Computing, ACM TCPS, AI Magazine
