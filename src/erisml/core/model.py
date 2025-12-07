@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
+from erisml.core.norms import NormSystem
 
 from .types import ActionSchema, EnvironmentRule, ObjectType, StateVar, StateVarDomain
 
