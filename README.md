@@ -65,3 +65,81 @@ python -m venv .venv
 pip install -e ".[dev]"
 
 pytest
+
+
+## Writing Your Own Ethics Module (EM)
+
+ErisML’s DEME subsystem is designed so that **any stakeholder** can plug in their own
+ethical perspective as a small, testable module.
+
+An EM is just a Python object that implements the `EthicsModule` protocol (or
+subclasses `BaseEthicsModule`) and **only looks at `EthicalFacts`**, never at raw
+domain data (ICD codes, sensor traces, etc.).
+
+### 1. Basic structure
+
+A minimal EM looks like this:
+
+```python
+from dataclasses import dataclass
+
+from erisml.ethics import (
+    EthicalFacts,
+    EthicalJudgement,
+    EthicsModule,
+)
+
+
+@dataclass
+class SimpleSafetyEM(EthicsModule):
+    """
+    Example EM that only cares about expected harm.
+
+    verdict mapping (based on normative_score):
+      [0.8, 1.0] -> strongly_prefer
+      [0.6, 0.8) -> prefer
+      [0.4, 0.6) -> neutral
+      [0.2, 0.4) -> avoid
+      [0.0, 0.2) -> forbid
+    """
+
+    em_name: str = "simple_safety"
+    stakeholder: str = "safety_officer"
+
+    def judge(self, facts: EthicalFacts) -> EthicalJudgement:
+        # Use only EthicalFacts – no direct access to ICD codes, sensors, etc.
+        harm = facts.consequences.expected_harm
+
+        # Simple scoring: less harm -> higher score
+        score = 1.0 - harm
+
+        # Map score to a discrete verdict
+        if score >= 0.8:
+            verdict = "strongly_prefer"
+        elif score >= 0.6:
+            verdict = "prefer"
+        elif score >= 0.4:
+            verdict = "neutral"
+        elif score >= 0.2:
+            verdict = "avoid"
+        else:
+            verdict = "forbid"
+
+        reasons = [
+            f"Expected harm={harm:.2f}, computed safety score={score:.2f}.",
+        ]
+
+        metadata = {
+            "harm": harm,
+            "score_components": {"harm_component": score},
+        }
+
+        return EthicalJudgement(
+            option_id=facts.option_id,
+            em_name=self.em_name,
+            stakeholder=self.stakeholder,
+            verdict=verdict,
+            normative_score=score,
+            reasons=reasons,
+            metadata=metadata,
+        )
