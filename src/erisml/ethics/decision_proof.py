@@ -15,10 +15,14 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, TYPE_CHECKING
 import uuid
+
+# Module logger for I/O boundary resilience
+logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from erisml.ethics.moral_vector import MoralVector
@@ -236,8 +240,15 @@ class DecisionProof:
 
         Returns:
             Reconstructed DecisionProof.
+
+        Raises:
+            ValueError: If JSON is invalid or malformed.
         """
-        data = json.loads(json_str)
+        try:
+            data = json.loads(json_str)
+        except json.JSONDecodeError as e:
+            logger.error("Invalid JSON in DecisionProof: %s", e)
+            raise ValueError(f"Invalid JSON in DecisionProof: {e}") from e
 
         # Reconstruct LayerOutput objects
         layer_outputs = [LayerOutput(**lo) for lo in data.get("layer_outputs", [])]
@@ -270,7 +281,7 @@ class DecisionProof:
 
 def hash_moral_vector(vector: MoralVector) -> str:
     """
-    Compute SHA-256 hash of a MoralVector.
+    Compute SHA-256 hash of a MoralVector (8+1 dimensions).
 
     Args:
         vector: The MoralVector to hash.
@@ -279,11 +290,16 @@ def hash_moral_vector(vector: MoralVector) -> str:
         Hexadecimal hash string.
     """
     data = {
+        # Core 8 dimensions
         "physical_harm": vector.physical_harm,
         "rights_respect": vector.rights_respect,
         "fairness_equity": vector.fairness_equity,
         "autonomy_respect": vector.autonomy_respect,
+        "privacy_protection": vector.privacy_protection,
+        "societal_environmental": vector.societal_environmental,
+        "virtue_care": vector.virtue_care,
         "legitimacy_trust": vector.legitimacy_trust,
+        # +1 epistemic dimension
         "epistemic_quality": vector.epistemic_quality,
         "extensions": dict(sorted(vector.extensions.items())),
         "veto_flags": sorted(vector.veto_flags),
@@ -389,9 +405,19 @@ class DecisionProofChain:
 
     @classmethod
     def from_json(cls, json_str: str) -> DecisionProofChain:
-        """Deserialize chain from JSON."""
+        """
+        Deserialize chain from JSON.
+
+        Raises:
+            ValueError: If JSON is invalid or malformed.
+        """
         chain = cls()
-        data = json.loads(json_str)
+        try:
+            data = json.loads(json_str)
+        except json.JSONDecodeError as e:
+            logger.error("Invalid JSON in DecisionProofChain: %s", e)
+            raise ValueError(f"Invalid JSON in DecisionProofChain: {e}") from e
+
         for proof_data in data:
             proof = DecisionProof.from_audit_json(json.dumps(proof_data))
             chain._proofs.append(proof)
