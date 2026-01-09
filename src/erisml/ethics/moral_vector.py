@@ -338,7 +338,7 @@ class MoralVector:
         if metric == "euclidean":
             return math.sqrt(sum(d**2 for d in diffs))
         elif metric == "manhattan":
-            return sum(diffs)
+            return float(sum(diffs))
         elif metric == "chebyshev":
             return max(diffs) if diffs else 0.0
         else:
@@ -351,11 +351,17 @@ class MoralVector:
             rights_respect=min(1.0, self.rights_respect + other.rights_respect),
             fairness_equity=min(1.0, self.fairness_equity + other.fairness_equity),
             autonomy_respect=min(1.0, self.autonomy_respect + other.autonomy_respect),
-            privacy_protection=min(1.0, self.privacy_protection + other.privacy_protection),
-            societal_environmental=min(1.0, self.societal_environmental + other.societal_environmental),
+            privacy_protection=min(
+                1.0, self.privacy_protection + other.privacy_protection
+            ),
+            societal_environmental=min(
+                1.0, self.societal_environmental + other.societal_environmental
+            ),
             virtue_care=min(1.0, self.virtue_care + other.virtue_care),
             legitimacy_trust=min(1.0, self.legitimacy_trust + other.legitimacy_trust),
-            epistemic_quality=min(1.0, self.epistemic_quality + other.epistemic_quality),
+            epistemic_quality=min(
+                1.0, self.epistemic_quality + other.epistemic_quality
+            ),
             extensions={
                 k: min(1.0, self.extensions.get(k, 0) + other.extensions.get(k, 0))
                 for k in set(self.extensions) | set(other.extensions)
@@ -372,7 +378,9 @@ class MoralVector:
             fairness_equity=max(0.0, min(1.0, self.fairness_equity * scalar)),
             autonomy_respect=max(0.0, min(1.0, self.autonomy_respect * scalar)),
             privacy_protection=max(0.0, min(1.0, self.privacy_protection * scalar)),
-            societal_environmental=max(0.0, min(1.0, self.societal_environmental * scalar)),
+            societal_environmental=max(
+                0.0, min(1.0, self.societal_environmental * scalar)
+            ),
             virtue_care=max(0.0, min(1.0, self.virtue_care * scalar)),
             legitimacy_trust=max(0.0, min(1.0, self.legitimacy_trust * scalar)),
             epistemic_quality=max(0.0, min(1.0, self.epistemic_quality * scalar)),
@@ -474,7 +482,7 @@ class MoralVector:
             if pd.secondary_use_without_consent:
                 privacy_protection *= 0.5
                 reason_codes.append("secondary_use_no_consent")
-            if pd.violates_data_minimization:
+            if not pd.data_minimization_respected:
                 privacy_protection *= 0.8
                 reason_codes.append("data_minimization_violated")
 
@@ -483,26 +491,26 @@ class MoralVector:
         if facts.societal_and_environmental is not None:
             se = facts.societal_and_environmental
             societal_environmental = 1.0 - se.environmental_harm
-            if se.harms_non_human_life:
-                societal_environmental *= 0.7
-                reason_codes.append("harms_non_human_life")
-            if se.negative_long_term_social_impact:
+            if se.long_term_societal_risk > 0.5:
                 societal_environmental *= 0.8
-                reason_codes.append("negative_social_impact")
+                reason_codes.append("high_societal_risk")
+            if se.burden_on_vulnerable_groups > 0.5:
+                societal_environmental *= 0.8
+                reason_codes.append("burdens_vulnerable")
 
         # Virtue/care from virtue_and_care (if present)
         virtue_care = 1.0
         if facts.virtue_and_care is not None:
             vc = facts.virtue_and_care
-            if not vc.demonstrates_compassion:
+            if not vc.expresses_compassion:
                 virtue_care -= 0.3
                 reason_codes.append("lacks_compassion")
-            if not vc.respects_human_dignity:
+            if not vc.respects_person_as_end:
                 virtue_care -= 0.4
                 reason_codes.append("dignity_not_respected")
-            if vc.creates_dependency_or_harm_to_relationship:
+            if vc.betrays_trust:
                 virtue_care -= 0.3
-                reason_codes.append("harms_relationship")
+                reason_codes.append("betrays_trust")
             virtue_care = max(0.0, virtue_care)
 
         # Extension dimensions (for domain-specific extras)

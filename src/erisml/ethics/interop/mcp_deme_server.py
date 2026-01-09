@@ -64,6 +64,9 @@ from erisml.ethics.governance.aggregation_v2 import (
     select_option_v2,
 )
 from erisml.ethics.layers.pipeline import DEMEPipeline, PipelineConfig
+from erisml.ethics.layers.reflex import ReflexLayerConfig
+from erisml.ethics.layers.tactical import TacticalLayerConfig
+from erisml.ethics.layers.strategic import StrategicLayerConfig
 from erisml.ethics.modules.registry import EMRegistry
 
 # Module logger for I/O boundary resilience
@@ -451,7 +454,7 @@ def list_profiles_v2() -> List[Dict[str, Any]]:
                 "tier_configs": {
                     str(k): {
                         "enabled": v.enabled,
-                        "weight": v.weight,
+                        "weight": v.weight_multiplier,
                         "veto_enabled": v.veto_enabled,
                     }
                     for k, v in profile.tier_configs.items()
@@ -588,7 +591,9 @@ def govern_decision_v2(
             fairness_equity=jdict["moral_vector"]["fairness_equity"],
             autonomy_respect=jdict["moral_vector"]["autonomy_respect"],
             privacy_protection=jdict["moral_vector"].get("privacy_protection", 1.0),
-            societal_environmental=jdict["moral_vector"].get("societal_environmental", 1.0),
+            societal_environmental=jdict["moral_vector"].get(
+                "societal_environmental", 1.0
+            ),
             virtue_care=jdict["moral_vector"].get("virtue_care", 1.0),
             legitimacy_trust=jdict["moral_vector"]["legitimacy_trust"],
             epistemic_quality=jdict["moral_vector"]["epistemic_quality"],
@@ -666,10 +671,18 @@ def run_pipeline(
     profile = _load_profile_v04(profile_id)
 
     # Build pipeline from profile
+    layer_cfg = profile.layer_config
     pipeline_config = PipelineConfig(
-        reflex_enabled=profile.layer_config.get("reflex_enabled", True),
-        tactical_enabled=profile.layer_config.get("tactical_enabled", True),
-        strategic_enabled=profile.layer_config.get("strategic_enabled", False),
+        reflex_config=ReflexLayerConfig(
+            enabled=layer_cfg.reflex_enabled,
+            timeout_us=layer_cfg.reflex_timeout_us,
+        ),
+        tactical_config=TacticalLayerConfig(
+            enabled=layer_cfg.tactical_enabled,
+        ),
+        strategic_config=StrategicLayerConfig(
+            enabled=layer_cfg.strategic_enabled,
+        ),
     )
 
     pipeline = DEMEPipeline(config=pipeline_config)
@@ -682,35 +695,28 @@ def run_pipeline(
         facts_list.append(facts)
 
     # Run pipeline
-    result = pipeline.evaluate(facts_list)
+    result = pipeline.decide(facts_list)
 
     response: Dict[str, Any] = {
         "selected_option": result.selected_option_id,
         "ranked_options": result.ranked_options,
         "forbidden_options": result.forbidden_options,
-        "layer_results": {
-            "reflex": {
-                "vetoed_options": result.reflex_vetoed,
-                "latency_ms": result.reflex_latency_ms,
-            },
-            "tactical": {
-                "moral_landscape": (
-                    {
-                        oid: _moral_vector_to_dict(vec)
-                        for oid, vec in result.tactical_landscape.vectors.items()
-                    }
-                    if result.tactical_landscape
-                    else {}
-                ),
-                "latency_ms": result.tactical_latency_ms,
-            },
-        },
+        "moral_landscape": (
+            {
+                oid: _moral_vector_to_dict(vec)
+                for oid, vec in result.moral_landscape.vectors.items()
+            }
+            if result.moral_landscape
+            else {}
+        ),
+        "total_latency_ms": result.total_latency_ms,
+        "rationale": result.rationale,
     }
 
     if include_proof and result.proof:
         response["proof"] = {
-            "proof_id": result.proof.proof_id,
-            "timestamp": result.proof.timestamp.isoformat(),
+            "decision_id": result.proof.decision_id,
+            "timestamp": result.proof.timestamp,
             "selected_option_id": result.proof.selected_option_id,
             "ranked_options": result.proof.ranked_options,
             "forbidden_options": result.proof.forbidden_options,
