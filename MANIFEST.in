@@ -1,6 +1,10 @@
 include LICENSE.txt
 include README.md
+include CITATION.cff
 include pyproject.toml
-recursive-include schemas *.json
-recursive-include deme_profiles *.json
-
+recursive-include src/erisml/schemas *.json
+recursive-include src/erisml/deme_profiles *.json
+recursive-include docs *.md *.pdf
+global-exclude *.py[cod]
+global-exclude __pycache__
+global-exclude .DS_Store
