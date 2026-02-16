@@ -20,12 +20,23 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Callable, Dict, List
 
-from erisml.core.interactions import NormViolation
-from erisml.core.metrics import NormMetrics
-from erisml.core.model import ErisModel, NormSystem
+from erisml.core.norms import NormSystem, NormViolation
+from erisml.core.model import ErisModel
 from erisml.core.types import ActionInstance
+
+
+@dataclass
+class NormMetrics:
+    steps: int = 0
+    violation_count: int = 0
+
+    @property
+    def nvr(self) -> float:
+        if self.steps == 0:
+            return 0.0
+        return self.violation_count / self.steps
 
 
 @dataclass
