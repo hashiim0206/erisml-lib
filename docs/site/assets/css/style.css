@@ -1931,3 +1931,237 @@ em { color: var(--text-secondary); font-style: italic; }
   color: var(--text-muted);
   line-height: 1.5;
 }
+
+/* ==========================================================================
+   Visual Demos & Animations
+   ========================================================================== */
+
+/* Scalar vs Tensor demo */
+.scalar-tensor-demo {
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: clamp(24px, 4vw, 40px);
+  border: 1px solid var(--border-subtle);
+  margin-top: 40px;
+}
+.demo-title {
+  font-size: 22px;
+  margin-bottom: 8px;
+  text-align: center;
+}
+.demo-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-bottom: 24px;
+}
+.demo-canvas-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.demo-canvas-row canvas {
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-deep);
+}
+.demo-arrow-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.demo-arrow-label {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.demo-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 400px;
+  margin: 0 auto;
+}
+.demo-slider-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.demo-slider-label span:first-child {
+  min-width: 90px;
+  color: var(--text-secondary);
+}
+.demo-slider {
+  flex: 1;
+  accent-color: var(--cb-teal);
+  cursor: pointer;
+}
+.demo-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--accent-light);
+  min-width: 35px;
+  text-align: right;
+}
+
+/* Geodesic pathfinder */
+.geodesic-demo {
+  margin-top: 40px;
+  padding: 32px;
+  background: var(--bg-card);
+  border-radius: 16px;
+  border: 1px solid var(--border-subtle);
+}
+.geodesic-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.geodesic-header h4 {
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+.geodesic-header p {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.geodesic-canvas-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+.geodesic-canvas-wrap canvas {
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-deep);
+  max-width: 100%;
+}
+.geodesic-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.geodesic-stats {
+  display: flex;
+  gap: 16px;
+}
+.gs-item {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.gs-item span {
+  color: var(--accent-light);
+  font-weight: 600;
+}
+
+/* Contraction button */
+.contraction-btn {
+  border-color: var(--cb-teal) !important;
+  color: var(--cb-teal) !important;
+}
+
+/* Chapter concept expansion */
+.chapter-concepts {
+  padding: 12px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.concept-tag {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  background: rgba(27,158,119,0.08);
+  color: var(--accent-light);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.concept-tag:hover {
+  background: rgba(27,158,119,0.15);
+}
+
+/* Concept detail modal */
+.concept-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+.concept-modal-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+.concept-modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border-medium);
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+}
+.concept-modal h3 {
+  font-size: 22px;
+  margin-bottom: 8px;
+}
+.concept-modal .concept-chapter {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  font-family: 'JetBrains Mono', monospace;
+}
+.concept-modal p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-bottom: 12px;
+}
+.concept-modal .concept-formal {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  padding: 16px;
+  background: var(--bg-deep);
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  color: var(--accent-light);
+  margin: 16px 0;
+  line-height: 1.6;
+}
+.concept-modal-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 20px;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+.concept-modal-close:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
