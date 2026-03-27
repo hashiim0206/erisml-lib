@@ -143,6 +143,38 @@ def get_book_configs() -> dict[str, BookConfig]:
             nav_key="nav-medicine",
             book_number=8,
         ),
+        "education": BookConfig(
+            key="education",
+            dir_name="geometric-education",
+            title="Geometric Education",
+            subtitle="Learning, Assessment, and the Topology of Human Development",
+            source_repo=source / "geometric-education",
+            chapter_sources=[
+                ("manuscript/part_i", "ch*.md"),
+                ("manuscript/part_ii", "ch*.md"),
+                ("manuscript/part_iii", "ch*.md"),
+                ("manuscript/part_iv", "ch*.md"),
+                ("manuscript/part_v", "ch*.md"),
+            ],
+            nav_key="nav-education",
+            book_number=9,
+        ),
+        "politics": BookConfig(
+            key="politics",
+            dir_name="geometric-politics",
+            title="Geometric Politics",
+            subtitle="Representation, Polarization, and the Topology of Democratic Choice",
+            source_repo=source / "geometric-politics",
+            chapter_sources=[
+                ("manuscript/part_i", "ch*.md"),
+                ("manuscript/part_ii", "ch*.md"),
+                ("manuscript/part_iii", "ch*.md"),
+                ("manuscript/part_iv", "ch*.md"),
+                ("manuscript/part_v", "ch*.md"),
+            ],
+            nav_key="nav-politics",
+            book_number=10,
+        ),
         "ai": BookConfig(
             key="ai",
             dir_name="geometric-ai",
@@ -564,7 +596,7 @@ def main():
     )
     parser.add_argument(
         "--book",
-        choices=["reasoning", "economics", "law", "cognition", "communication", "medicine", "ai", "all"],
+        choices=["reasoning", "economics", "law", "cognition", "communication", "medicine", "education", "politics", "ai", "all"],
         default="all",
         help="Which book to build (default: all)",
     )
